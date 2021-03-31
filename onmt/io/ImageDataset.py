@@ -154,7 +154,7 @@ class ImageDataset(ONMTDatasetBase):
             return imgs
 
         fields["src"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.FloatTensor,
+            use_vocab=False, tensor_type=torch.float,
             postprocessing=make_img, sequential=False)
 
         for j in range(n_src_features):
@@ -170,7 +170,7 @@ class ImageDataset(ONMTDatasetBase):
                 torchtext.data.Field(init_token=BOS_WORD, eos_token=EOS_WORD,
                                      pad_token=PAD_WORD)
 
-        def make_src(data, vocab, is_train):
+        def make_src(data, vocab):
             src_size = max([t.size(0) for t in data])
             src_vocab_size = max([t.max() for t in data]) + 1
             alignment = torch.zeros(src_size, len(data), src_vocab_size)
@@ -180,7 +180,7 @@ class ImageDataset(ONMTDatasetBase):
             return alignment
 
         fields["src_map"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.FloatTensor,
+            use_vocab=False, tensor_type=torch.float,
             postprocessing=make_src, sequential=False)
 
         def make_tgt(data, vocab, is_train):
@@ -191,11 +191,11 @@ class ImageDataset(ONMTDatasetBase):
             return alignment
 
         fields["alignment"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.LongTensor,
+            use_vocab=False, tensor_type=torch.long,
             postprocessing=make_tgt, sequential=False)
 
         fields["indices"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.LongTensor,
+            use_vocab=False, tensor_type=torch.long,
             sequential=False)
 
         return fields

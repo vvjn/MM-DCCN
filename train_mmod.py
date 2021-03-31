@@ -55,31 +55,32 @@ if opt.rnn_type == "SRU" and not opt.gpuid:
 if torch.cuda.is_available() and not opt.gpuid:
     print("WARNING: You have a CUDA device, should run with -gpuid 0")
 
-if opt.gpuid:
-    cuda.set_device(opt.gpuid[0])
-    if opt.seed > 0:
-        torch.cuda.manual_seed(opt.seed)
-
 if len(opt.gpuid) > 1:
     sys.stderr.write("Sorry, multigpu isn't supported yet, coming soon!\n")
     sys.exit(1)
 
+if opt.gpuid:
+    device = torch.device("cuda:%d" % opt.gpuid[0]) if opt.gpuid else torch.device("cpu")
+    cuda.set_device(device)
+    if opt.seed > 0:
+        torch.cuda.manual_seed(opt.seed)
+
 # multimodal-NMT specific parameters
+# Global image features
 assert( os.path.isfile(opt.path_to_train_img_feats) ), \
         'Must provide the file containing the training image features.'
-
 assert( os.path.isfile(opt.path_to_valid_img_feats) ), \
         'Must provide the file containing the validation image features.'
 
+# What this?
 assert( os.path.isfile(opt.path_to_train_img_mask) ), \
         'Must provide the file containing the training image mask.'
-
 assert( os.path.isfile(opt.path_to_valid_img_mask) ), \
         'Must provide the file containing the validation image mask.'
 
+# Local image features
 assert( os.path.isfile(opt.path_to_train_attr) ), \
         'Must provide the file containing the training image attributes.'
-
 assert( os.path.isfile(opt.path_to_valid_attr) ), \
         'Must provide the file containing the validation image attributes.'
 
@@ -224,7 +225,7 @@ def make_dataset_iter(datasets, fields, opt, is_train=True):
             tgt_elements = count * max_tgt_in_batch
             return max(src_elements, tgt_elements)
 
-    device = opt.gpuid[0] if opt.gpuid else -1
+    device = torch.device("cuda:%d" % opt.gpuid[0]) if opt.gpuid else torch.device("cpu")
 
     return DatasetLazyIter(datasets, fields, batch_size, batch_size_fn,
                            device, is_train)
@@ -282,7 +283,7 @@ def train_model(model, fields, optim, data_type, train_attr, valid_attr,
     valid_iter = make_dataset_iter(lazily_load_dataset("valid"),
                                     fields, opt,
                                     is_train=False)
-    valid_sents = max(batch.indices.max().data[0] for batch in valid_iter)
+    valid_sents = max(batch.indices.max().data.item() for batch in valid_iter)
     print('valid', valid_sents, valid_img_feats.shape)
     assert valid_sents == valid_img_feats.shape[0] - 1
 
@@ -507,20 +508,54 @@ def show_optimizer_state(optim):
 
 def main():
     # start with loading the image features
-    train_img_feats = np.load(opt.path_to_train_img_feats)
-    valid_img_feats = np.load(opt.path_to_valid_img_feats)
-    train_img_feats = train_img_feats.astype(np.float32)
-    valid_img_feats = valid_img_feats.astype(np.float32)
 
-    train_img_mask = np.load(opt.path_to_train_img_mask)[:, :opt.num_regions]
-    valid_img_mask = np.load(opt.path_to_valid_img_mask)[:, :opt.num_regions]
-    train_img_mask = train_img_mask.astype(np.float32)
-    valid_img_mask = valid_img_mask.astype(np.float32)
+    # global image features
+    train_img_feats = np.load(opt.path_to_train_img_feats, mmap_mode="r")
+    valid_img_feats = np.load(opt.path_to_valid_img_feats, mmap_mode="r")
+    # train_img_feats = train_img_feats.astype(np.float32)
+    # valid_img_feats = valid_img_feats.astype(np.float32)
 
-    train_attr = np.load(opt.path_to_train_attr)[:, :opt.num_regions, :, :]
-    valid_attr = np.load(opt.path_to_valid_attr)[:, :opt.num_regions, :, :]
-    train_attr = train_attr.astype(np.float32)
-    valid_attr = valid_attr.astype(np.float32)
+    # mask of the top 10 highest regions; 0 if high prob, 1 if not.
+    train_img_mask = np.load(opt.path_to_train_img_mask, mmap_mode="r")
+    valid_img_mask = np.load(opt.path_to_valid_img_mask, mmap_mode="r")
+    # train_img_mask = train_img_mask.astype(np.float32)
+    # valid_img_mask = valid_img_mask.astype(np.float32)    
+
+    train_attr = np.load(opt.path_to_train_attr, mmap_mode="r")
+    valid_attr = np.load(opt.path_to_valid_attr, mmap_mode="r")
+    # train_attr = train_attr.astype(np.float32)
+    # valid_attr = valid_attr.astype(np.float32)
+    
+#    # global image features
+#    train_img_feats = np.load(opt.path_to_train_img_feats)
+#    valid_img_feats = np.load(opt.path_to_valid_img_feats)
+#    train_img_feats = train_img_feats.astype(np.float32)
+#    valid_img_feats = valid_img_feats.astype(np.float32)
+#
+#    # mask of the top 10 highest regions; 0 if high prob, 1 if not.
+#    train_img_mask = np.load(opt.path_to_train_img_mask)[:, :opt.num_regions]
+#    valid_img_mask = np.load(opt.path_to_valid_img_mask)[:, :opt.num_regions]
+#    train_img_mask = train_img_mask.astype(np.float32)
+#    valid_img_mask = valid_img_mask.astype(np.float32)
+#    
+#    # images x num_regions x object_classes x
+#    # Following Anderson et al. [2], we employ
+#    # the R-CNN based bottom-up attention to identify the regions with
+#    # class annotations. For each region, we generate the corresponding
+#    # prediction probability distribution over 1,600 classes from Visual
+#    # Genome.
+#    # To represent each region as a vector, we project its class
+#    # annotations into word embeddings and define the region vector as
+#    # the weighted sum of its class annotation embeddings. Finally, all
+#    # region vectors are concatenated to represent the semantics of input
+#    # image. In practice, we keep the number of predicted regions up to
+#    # 10 so as to reduce negative effects of abundant regions, therefore
+#    # the regional visual features can be represented as a 10x256 matrix,
+#    # where each of the 10 rows consists of a 256D feature vector
+#    train_attr = np.load(opt.path_to_train_attr)[:, :opt.num_regions, :, :]
+#    valid_attr = np.load(opt.path_to_valid_attr)[:, :opt.num_regions, :, :]
+#    train_attr = train_attr.astype(np.float32)
+#    valid_attr = valid_attr.astype(np.float32)
 
     if opt.path_to_train_feat_indices:
         train_feat_indices = []

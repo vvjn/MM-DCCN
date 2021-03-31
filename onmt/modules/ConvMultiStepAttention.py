@@ -65,7 +65,7 @@ class ConvMultiStepAttention(nn.Module):
         pre_attn = torch.bmm(target, encoder_out_top)
 
         if self.mask is not None:
-            pre_attn.data.masked_fill_(self.mask, -float('inf'))
+            pre_attn.data.masked_fill_(self.mask.type(torch.bool), -float('inf'))
 
         pre_attn = pre_attn.transpose(0, 2)
         attn = F.softmax(pre_attn)

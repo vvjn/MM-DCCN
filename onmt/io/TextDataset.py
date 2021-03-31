@@ -217,7 +217,7 @@ class TextDataset(ONMTDatasetBase):
                 torchtext.data.Field(init_token=BOS_WORD, eos_token=EOS_WORD,
                                      pad_token=PAD_WORD)
 
-        def make_src(data, vocab, is_train):
+        def make_src(data, vocab):
             src_size = max([t.size(0) for t in data])
             src_vocab_size = max([t.max() for t in data]) + 1
             alignment = torch.zeros(src_size, len(data), src_vocab_size)
@@ -227,7 +227,7 @@ class TextDataset(ONMTDatasetBase):
             return alignment
 
         fields["src_map"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.FloatTensor,
+            use_vocab=False, dtype=torch.float,
             postprocessing=make_src, sequential=False)
 
         def make_tgt(data, vocab, is_train):
@@ -238,11 +238,11 @@ class TextDataset(ONMTDatasetBase):
             return alignment
 
         fields["alignment"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.LongTensor,
+            use_vocab=False, dtype=torch.long,
             postprocessing=make_tgt, sequential=False)
 
         fields["indices"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.LongTensor,
+            use_vocab=False, dtype=torch.long,
             sequential=False)
 
         return fields
@@ -360,13 +360,13 @@ class ShardedTextCorpusIterator(object):
                     cur_pos = self.corpus.tell()
                     if cur_pos >= self.last_pos + self.shard_size:
                         self.last_pos = cur_pos
-                        raise StopIteration
+                        return # raise StopIteration
 
                 line = self.corpus.readline()
                 if line == '':
                     self.eof = True
                     self.corpus.close()
-                    raise StopIteration
+                    return # raise StopIteration
 
                 self.line_index += 1
                 iteration_index += 1

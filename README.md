@@ -1,15 +1,14 @@
 # DCCN
 The code for "Dynamic Context-guided Capsule Network for Multimodal Machine Translation" in Pytorch. 
-This project is based on https://github.com/Waino/OpenNMT-py. 
+This project is from https://github.com/DeepLearnXMU/MM-DCCN/.
 
 ## Installation
+
 ```python
-pip install torch==0.3.1
-pip install six
-pip install tqdm
-pip install torchtext==0.2.3
-pip install future
+pip install -r requirements.txt
 ```
+
+Tested with Python 3.6, CUDA 10.2, Pytorch 1.7, Open Suse Leap 15.2.
 
 ## Quickstart
 ### Step 1: Preprocess the data
@@ -18,7 +17,7 @@ To preprocess text data, run:
 python preprocess.py -train_src src-train.txt -train_tgt tgt-train.txt -valid_src src-val.txt -valid_tgt tgt-val.txt -save_data demo
 ```
 
-To preorocess image data, please refer to https://github.com/peteanderson80/bottom-up-attention.
+To preprocess image data, please refer to https://github.com/peteanderson80/bottom-up-attention.
 
 ### Step 2: Train the model
 ```python

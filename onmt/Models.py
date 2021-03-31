@@ -608,7 +608,7 @@ class DecoderState(object):
     def detach(self):
         for h in self._all:
             if h is not None:
-                h.detach_()
+                h.detach() # h.detach_()
 
     def beam_update(self, idx, positions, beam_size):
         for e in self._all:
@@ -661,7 +661,7 @@ class RNNDecoderState(DecoderState):
 
     def repeat_beam_size_times(self, beam_size):
         """ Repeat beam_size times along batch dimension. """
-        vars = [Variable(e.data.repeat(1, beam_size, 1), volatile=True)
+        vars = [Variable(e.data.repeat(1, beam_size, 1))
                 for e in self._all]
         self.hidden = tuple(vars[:-1])
         self.input_feed = vars[-1]

@@ -2,7 +2,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 import torch.cuda
-from torch.autograd import Variable
 import onmt.io
 from onmt.Utils import aeq
 from onmt.modules.Transformer import TransformerEncoder
@@ -171,7 +170,7 @@ class MultiModalLossCompute(onmt.Loss.NMTLossCompute):
             if mask.dim() > 0:
                 log_likelihood.index_fill_(0, mask, 0)
                 tmp_.index_fill_(0, mask, 0)
-            gtruth = Variable(tmp_, requires_grad=False)
+            gtruth = tmp_
         loss = self.criterion(scores, gtruth)
         if self.confidence < 1:
             # Default: report smoothed ppl.
@@ -246,7 +245,7 @@ class MultiModalTransformerEncoder(TransformerEncoder):
             out = self.transformer[i](out, mask)
         out = self.layer_norm(out)
 
-        return Variable(emb.data), out.transpose(0, 1).contiguous()
+        return emb.data, out.transpose(0, 1).contiguous()
 
 
 class CapsuleDecoderLayer(TransformerDecoderLayer):

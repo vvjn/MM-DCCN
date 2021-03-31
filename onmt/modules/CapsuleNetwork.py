@@ -58,11 +58,11 @@ class CapsuleNet(nn.Module):
         if text_mask is not None:
             tmp_mask = text_mask
             tmp_mask = tmp_mask.unsqueeze(-1).unsqueeze(-1)
-            b = b.masked_fill(Variable(tmp_mask), -1e18)
+            b = b.masked_fill(tmp_mask.type(torch.bool), -1e18)
         if img_mask is not None:
             tmp_mask = img_mask
             tmp_mask = tmp_mask.unsqueeze(1).unsqueeze(-1)
-            b = b.masked_fill(tmp_mask, -1e18)
+            b = b.masked_fill(tmp_mask.type(torch.bool), -1e18)
         priors = (img @ self.route_weights).view(img.shape[0], img.shape[1], self.num_regions, self.num_capsules, -1)
         for i in range(self.num_iterations):
             c = F.softmax(b, dim=2)

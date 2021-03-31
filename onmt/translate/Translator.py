@@ -4,7 +4,6 @@ import codecs
 import os
 import math
 
-from torch.autograd import Variable
 from itertools import count
 
 import onmt.ModelConstructor
@@ -19,7 +18,8 @@ def make_translator(opt, report_score=True, out_file=None, use_ensemble=False):
         out_file = codecs.open(opt.output, 'w', 'utf-8')
 
     if opt.gpu > -1:
-        torch.cuda.set_device(opt.gpu)
+        opt.device = torch.device("cuda:%d" % opt.gpu)
+        torch.cuda.set_device(opt.device)
 
     dummy_parser = argparse.ArgumentParser(description='train.py')
     onmt.opts.model_opts(dummy_parser)
@@ -145,8 +145,9 @@ class Translator(object):
                                      window=self.window,
                                      use_filter_pred=self.use_filter_pred)
 
+        device = torch.device("cuda:%d" % self.gpu) if self.gpu > -1 else torch.device("cpu")
         data_iter = onmt.io.OrderedIterator(
-            dataset=data, device=self.gpu,
+            dataset=data, device=device,
             batch_size=batch_size, train=False, sort=False,
             sort_within_batch=True, shuffle=False)
 
@@ -161,7 +162,7 @@ class Translator(object):
 
         all_scores = []
         for batch in data_iter:
-            batch_data = self.translate_batch(batch, data)
+            with torch.no_grad(): batch_data = self.translate_batch(batch, data)
             translations = builder.from_batch(batch_data)
 
             for trans in translations:
@@ -257,7 +258,7 @@ class Translator(object):
                 for __ in range(batch_size)]
 
         # Help functions for working with beams and batches
-        def var(a): return Variable(a, volatile=True)
+        def var(a): return a
 
         def rvar(a): return var(a.repeat(1, beam_size, 1))
 

@@ -33,7 +33,8 @@ def main():
     opt = parser.parse_args()
     opt.cuda = opt.gpu > -1
     if opt.cuda:
-        torch.cuda.set_device(opt.gpu)
+        device = torch.device("cuda:%d" % opt.gpu) if opt.gpu > -1 else torch.device("cpu")
+        torch.cuda.set_device(device)
 
     # Add in default model arguments, possibly added since training.
     checkpoint = torch.load(opt.model,

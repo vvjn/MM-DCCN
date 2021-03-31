@@ -27,9 +27,9 @@ class CoAttention(nn.Module):
         weight_before_tanh = torch.sum(vimg * vtext, dim=-1) / (torch.sqrt(torch.sum(vimg ** 2)) * torch.sqrt(torch.sum(vtext ** 2)))
         if text_mask is not None:
             text_mask = text_mask.unsqueeze(-1).unsqueeze(-1)
-            weight_before_tanh = weight_before_tanh.masked_fill(Variable(text_mask), 0)
+            weight_before_tanh = weight_before_tanh.masked_fill(text_mask.type(torch.bool), 0)
         if img_mask is not None:
             img_mask = img_mask.unsqueeze(1).unsqueeze(-1)
-            weight_before_tanh = weight_before_tanh.masked_fill(img_mask, 0)
+            weight_before_tanh = weight_before_tanh.masked_fill(img_mask.type(torch.bool), 0)
         weight = F.tanh(weight_before_tanh)
         return weight
