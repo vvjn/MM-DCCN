@@ -186,12 +186,9 @@ class TrainerMultimodal(object):
             # extract indices for all entries in the mini-batch
             idxs = batch.indices.cpu().data.numpy()
             # load image features for this minibatch into a pytorch Variable
-            img_feats = torch.from_numpy(self.valid_img_feats[idxs])
-            img_feats = torch.autograd.Variable(img_feats, requires_grad=False)
-            img_mask = torch.from_numpy(self.valid_img_mask[idxs])
-            img_mask = torch.autograd.Variable(img_mask, requires_grad=False)
-            img_attr = torch.from_numpy(self.valid_attr[idxs])
-            img_attr = torch.autograd.Variable(img_attr, requires_grad=False)
+            img_feats = torch.tensor(self.valid_img_feats[idxs].transpose((0,2,1)), dtype=torch.float32)
+            img_mask = torch.tensor(self.valid_img_mask[idxs], dtype=torch.float32)
+            img_attr = torch.tensor(self.valid_attr[idxs], dtype=torch.float32)
             if next(self.model.parameters()).is_cuda:
                 img_feats = img_feats.cuda()
                 img_mask = img_mask.cuda()
@@ -308,12 +305,9 @@ class TrainerMultimodal(object):
             if self.train_feat_indices is not None:
                 idxs = self.train_feat_indices[idxs]
             # load image features for this minibatch into a pytorch Variable
-            img_attr = torch.from_numpy(self.train_attr[idxs])
-            img_attr = torch.autograd.Variable(img_attr, requires_grad=False)
-            img_feats = torch.from_numpy(self.train_img_feats[idxs])
-            img_feats = torch.autograd.Variable(img_feats, requires_grad=False)
-            img_mask = torch.from_numpy(self.train_img_mask[idxs])
-            img_mask = torch.autograd.Variable(img_mask, requires_grad=False)
+            img_attr = torch.tensor(self.train_attr[idxs], dtype=torch.float32)
+            img_feats = torch.tensor(self.train_img_feats[idxs].transpose((0,2,1)), dtype=torch.float32)
+            img_mask = torch.tensor(self.train_img_mask[idxs], dtype=torch.float32)
             if next(self.model.parameters()).is_cuda:
                 img_attr = img_attr.cuda()
                 img_feats = img_feats.cuda()

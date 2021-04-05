@@ -512,19 +512,17 @@ def main():
     # global image features
     train_img_feats = np.load(opt.path_to_train_img_feats, mmap_mode="r")
     valid_img_feats = np.load(opt.path_to_valid_img_feats, mmap_mode="r")
-    # train_img_feats = train_img_feats.astype(np.float32)
-    # valid_img_feats = valid_img_feats.astype(np.float32)
+    train_img_feats = train_img_feats.reshape((train_img_feats.shape[0], train_img_feats.shape[1], -1))
+    valid_img_feats = valid_img_feats.reshape((valid_img_feats.shape[0], valid_img_feats.shape[1], -1))
+    #print(train_img_feats.shape)
+    #print(valid_img_feats.shape)
 
     # mask of the top 10 highest regions; 0 if high prob, 1 if not.
     train_img_mask = np.load(opt.path_to_train_img_mask, mmap_mode="r")
     valid_img_mask = np.load(opt.path_to_valid_img_mask, mmap_mode="r")
-    # train_img_mask = train_img_mask.astype(np.float32)
-    # valid_img_mask = valid_img_mask.astype(np.float32)    
 
     train_attr = np.load(opt.path_to_train_attr, mmap_mode="r")
     valid_attr = np.load(opt.path_to_valid_attr, mmap_mode="r")
-    # train_attr = train_attr.astype(np.float32)
-    # valid_attr = valid_attr.astype(np.float32)
     
 #    # global image features
 #    train_img_feats = np.load(opt.path_to_train_img_feats)
@@ -568,7 +566,6 @@ def main():
         train_img_feats = np.concatenate([train_img_feats, mean_feat], axis=0)
     else:
         train_feat_indices = None
-
 
     # Load checkpoint if we resume from a previous training.
     if opt.train_from:

@@ -49,8 +49,8 @@ class MultiHeadedAttention(nn.Module):
     """
     def __init__(self, head_count, model_dim, dropout=0.1):
         
-        #print("model_dim"+str(model_dim))
-        #print("head_count"+str(head_count))
+        #print("model_dim " + str(model_dim))
+        #print("head_count " + str(head_count))
         assert model_dim % head_count == 0
         self.dim_per_head = model_dim // head_count
         self.model_dim = model_dim

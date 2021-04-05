@@ -10,9 +10,9 @@ def model_opts(parser):
 
     # Embedding Options
     group = parser.add_argument_group('Model-Embeddings')
-    group.add_argument('-src_word_vec_size', type=int, default=500,
+    group.add_argument('-src_word_vec_size', type=int, default=256,
                        help='Word embedding size for src.')
-    group.add_argument('-tgt_word_vec_size', type=int, default=500,
+    group.add_argument('-tgt_word_vec_size', type=int, default=256,
                        help='Word embedding size for tgt.')
     group.add_argument('-word_vec_size', type=int, default=-1,
                        help='Word embedding size for src and tgt.')
@@ -75,11 +75,11 @@ def model_opts(parser):
 
     group.add_argument('-layers', type=int, default=-1,
                        help='Number of layers in enc/dec.')
-    group.add_argument('-enc_layers', type=int, default=2,
+    group.add_argument('-enc_layers', type=int, default=4,
                        help='Number of layers in the encoder')
-    group.add_argument('-dec_layers', type=int, default=2,
+    group.add_argument('-dec_layers', type=int, default=4,
                        help='Number of layers in the decoder')
-    group.add_argument('-rnn_size', type=int, default=500,
+    group.add_argument('-rnn_size', type=int, default=256,
                        help='Size of rnn hidden states')
     group.add_argument('-cnn_kernel_width', type=int, default=3,
                        help="""Size of windows in the cnn, the kernel_size is
@@ -300,7 +300,7 @@ def train_opts(parser):
                        help="""Maximum batches of words in a sequence to run
                         the generator on in parallel. Higher is faster, but
                         uses more memory.""")
-    group.add_argument('-epochs', type=int, default=13,
+    group.add_argument('-epochs', type=int, default=10,
                        help='Number of training epochs')
     group.add_argument('-optim', default='sgd',
                        choices=['sgd', 'adagrad', 'adadelta', 'adam',
@@ -544,11 +544,11 @@ def mmod_finetune_opts(parser):
                         help="""Use the decoder hidden state as input to
                         the generator gate.""")
     # args for capsule network
-    parser.add_argument('-num_iterations', type=int, default=2,
+    parser.add_argument('-num_iterations', type=int, default=3,
                         help="""Number of iteration times.""")
     parser.add_argument('-num_capsules', type=int, default=1,
                         help="""Number of high-level capsules.""")
-    parser.add_argument('-ffn_hidden', type=int, default=512,
+    parser.add_argument('-ffn_hidden', type=int, default=256,
                         help="""Number of hiddens in ffn after capsule.""")
     parser.add_argument('-num_regions', type=int, default=50,
                         help="""Number of low-level capsules (max region number).""")

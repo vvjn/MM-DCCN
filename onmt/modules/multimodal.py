@@ -210,13 +210,15 @@ class MultiModalTransformerEncoder(TransformerEncoder):
                  dropout, embeddings):
         super(MultiModalTransformerEncoder, self).__init__(
             num_layers, hidden_size, dropout, embeddings)
-        img_feat_size = 2048
+        # img_feat_size = 2048
+        print("IMG_TO_EMB: %d" % img_feat_size)
         self.img_to_emb = nn.Linear(img_feat_size, hidden_size, bias=True)
 
     def forward(self, input, img_feats, lengths=None, hidden=None):
         """ See :obj:`EncoderBase.forward()`"""
         self._check_args(input, lengths, hidden)
         emb = self.embeddings(input)
+
         img_feats = torch.mean(img_feats, dim=1, keepdim=True).permute(1, 0, 2)
         img_emb = self.img_to_emb(img_feats)
 

@@ -218,7 +218,7 @@ class TransformerDecoderLayer(nn.Module):
     def _get_attn_subsequent_mask(self, size):
         ''' Get an attention mask to avoid using the subsequent info.'''
         attn_shape = (1, size, size)
-        subsequent_mask = np.triu(np.ones(attn_shape), k=1).astype('uint8')
+        subsequent_mask = np.triu(np.ones(attn_shape), k=1).astype('bool')
         subsequent_mask = torch.from_numpy(subsequent_mask)
         return subsequent_mask
 

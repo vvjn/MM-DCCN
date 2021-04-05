@@ -60,8 +60,8 @@ class CapsuleMultiHeadedAttn(nn.Module):
         self.linear_query = nn.Linear(model_dim,
                                       head_count * self.dim_per_head)
         self.sm = nn.Softmax(dim=-1)
-        self.img_embedding = ImgEmbeddings(1024)
-        self.attr_embedding = ImgEmbeddings(model_dim)
+        self.img_embedding = ImgEmbeddings(1024, model_dim)
+        self.attr_embedding = ImgEmbeddings(model_dim, model_dim)
         self.capsulenet_img = CapsuleNet(num_iterations, num_capsules, 196, model_dim)
         self.capsulenet_attr = CapsuleNet(num_iterations, num_capsules, num_regions, model_dim)
         self.linear_img = nn.Linear(model_dim, model_dim)
@@ -142,8 +142,8 @@ class CapsuleMultiHeadedAttn(nn.Module):
         attn = self.sm(scores)
         drop_attn = self.dropout(attn)
         context = unshape(torch.matmul(drop_attn, value_up))
-        img_emb = self.img_embedding(img)
         attr_emb = self.attr_embedding(attr)
+        img_emb = self.img_embedding(img)
 
         # 4) DCCN
         mix_img_emb, mix_cxt_img = self.capsulenet_img(img_emb, context, img_mask=img_mask, text_mask=cap_mask)
