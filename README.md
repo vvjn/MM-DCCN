@@ -4,42 +4,76 @@ This project is from https://github.com/DeepLearnXMU/MM-DCCN/.
 
 ## Installation
 
-```python
-pip install -r requirements.txt
-```
-
 Tested with Python 3.6, CUDA 10.2, Pytorch 1.7, Open Suse Leap 15.2.
 
+Install from the requirements file.
+```shell
+pip install -r requirements.txt
+# Or, alternatively
+pip install torch torchvision torchaudio torchtext sacrebleu opencv-python requests pycocotools ray fvcore
+```
+
+Install object detection code.
+```shell
+cd bottom-up-attention.pytorch/detectron2
+pip install -e .
+cd ../apex
+pip install -e .
+cd ..
+pip install -e .
+cd ..
+```
+
+Install MM-DCCN code.
+```shell
+pip install -e .
+```
+
+Download pre-trained global image feature (ResNet-50) model from [here](https://download.pytorch.org/models/resnet50-0676ba61.pth), download pre-trained objection detection feature (Faster R-CNN with ResNet-101 backbone) model [here](https://awma1-my.sharepoint.com/:u:/g/personal/yuz_l0_tn/EaXvCC3WjtlLvvEfLr3oa8UBLA21tcLh4L8YLbYXl6jgjg?download=1), and copy into `work/` directory.
+
+
 ## Quickstart
-### Step 1: Preprocess the data
-To preprocess text data, run:
-```python
-python preprocess.py -train_src src-train.txt -train_tgt tgt-train.txt -valid_src src-val.txt -valid_tgt tgt-val.txt -save_data demo
+
+### Download Multi30k dataset and tokenize
+
+Download the WMT 2018 multimodal translation task version of Multi30k:
+```shell
+git clone --recursive https://github.com/vvjn/multi30k-wmt18
+```
+The images in the Multi30k dataset are from the Flickr30k dataset, the images of which can be downloaded from [here](http://shannon.cs.illinois.edu/DenotationGraph/data/index.html), and the `test_2017_flickr` and `test_2018_flickr` images from [here](https://drive.google.com/drive/folders/1kfgmYFL5kup51ET7WQNxYmKCvwz_Hjkt).
+
+Tokenize
+```shell
+cd multi30k-wmt18/
+sh prepare-wmt18-text.sh
 ```
 
-To preprocess image data, please refer to https://github.com/peteanderson80/bottom-up-attention.
+### Preprocess the image data
 
-### Step 2: Train the model
-```python
-python train_mmod.py \
- -data demo \
- -save_model demo_modelname \
- -path_to_train_img_feats train-resnet50-res4frelu.npy \
- -path_to_valid_img_feats val-resnet50-res4frelu.npy \
- -path_to_train_attr train_obj.npy \
- -path_to_valid_attr val_obj.npy \
- -path_to_train_img_mask train_obj_mask.npy \
- -path_to_valid_img_mask val_obj_mask.npy \
- -encoder_type transformer -decoder_type transformer --multimodal_model_type dcap
+Extract global image features.
+```shell
+cd work/
+for x in train val test_2016_flickr; do
+    python ../MM-DCCN/extract_global_image_feats.py -i ../data/flickr30k-images -f ../multi30k-wmt18/task1-data/image_splits/$x.txt -m ../models_MM-DCCN/resnet50-0676ba61.pth -o ../multi30k-wmt18/task1-data/features_resnet50/$x
+done
 ```
 
-### Step 3: Translate sentences
-```python
-python translate_mmod.py \
- -model demo_modelname.pt \
- -src test_src.txt -output text_tgt.txt \
- -path_to_test_img_feats test-resnet50-res4frelu.npy \
- -path_to_test_attr test_obj.npy \
- -path_to_test_img_mask test_obj_mask.npy \
- -replace_unk -verbose --multimodal_model_type dcap
+Extract bottom-up object detection features.
+```shell
+x=flickr30k-images
+python ../MM-DCCN/bottom-up-attention.pytorch/extract_scores_and_features.py --mode caffe --num-cpus 4 --extract-mode roi_feats --min-max-boxes 10,10 --gpus 0 --config-file ../MM-DCCN/bottom-up-attention.pytorch/configs/bua-caffe/extract-bua-caffe-r101.yaml --image-dir ../data/$x --out-dir ../multi30k-wmt18/task1-data/features_butd_m10m10/$x
+```
+
+Convert from BU format to DCCN format.
+```shell
+for x in val train test_2016_flickr; do
+    python ../MM-DCCN/convert_butd_feats_to_dccn.py -i ../multi30k-wmt18/task1-data/features_butd_m10m10/flickr30k-images -f ../multi30k-wmt18/task1-data/image_splits/$x.txt  -v onmt-runs/mmod_run3/data/processed.vocab.pt -o ../multi30k-wmt18/task1-data/features_dccn/$x
+done
+```
+
+### Preprocess/train/translate/evaluate the text data
+
+```shell
+cd work/
+sh ../MM-DCCN/bpe_pipeline_mmod.sh run1 [preprocess|train|translate|evaluate] ../MM-DCCN ../multi30k-wmt18/task1-data/en-de ../multi30k-wmt18/task1-data/en-de/features_resnet50 ../multi30k-wmt18/task1-data/en-de/features_dccn
 ```
