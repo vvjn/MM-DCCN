@@ -42,7 +42,7 @@ git clone --recursive https://github.com/vvjn/multi30k-wmt18
 ```
 The images in the Multi30k dataset are from the Flickr30k dataset, the images of which can be downloaded from [here](http://shannon.cs.illinois.edu/DenotationGraph/data/index.html), and the `test_2017_flickr` and `test_2018_flickr` images from [here](https://drive.google.com/drive/folders/1kfgmYFL5kup51ET7WQNxYmKCvwz_Hjkt).
 
-Tokenize
+Tokenize and BPE encode.
 ```shell
 cd multi30k-wmt18/
 sh prepare-wmt18-text.sh
