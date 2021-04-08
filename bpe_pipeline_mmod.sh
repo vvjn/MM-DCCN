@@ -3,7 +3,7 @@
 # Created : Nov 06, 2017
 
 # Usage:
-# sh bpe_pipeline_mmod.sh run1 [preprocess|train|translate|evaluate] ../MM-DCCN ../multi30k-wmt18/task1-data/en-de ../multi30k-wmt18/task1-data/en-de/features_resnet50 ../multi30k-wmt18/task1-data/en-de/features_dccn
+# sh bpe_pipeline_mmod.sh run1 [preprocess|train|translate|evaluate] ../MM-DCCN ../multi30k-wmt18/task1-data/en-de ../multi30k-wmt18/task1-data/features_resnet50 ../multi30k-wmt18/task1-data/features_dccn
 
 # update these variables
 NAME=$1
@@ -95,7 +95,7 @@ case $2 in
         if [[ ! -z $GPUARG ]]; then
             GPU_OPTS="-gpuid $GPUARG"
         fi
-        CMD="python $ONMT/train_mmod.py -data $OUT/data/processed -save_model $OUT/models/$NAME $GPU_OPTS -path_to_train_img_feats $FEATS_DATA/train-resnet50-res4frelu.npy  -path_to_train_attr $BUTD_DATA/train-img_attr.npy -path_to_train_img_mask $BUTD_DATA/train-img_mask.npy -path_to_valid_img_feats $FEATS_DATA/val-resnet50-res4frelu.npy  -path_to_valid_attr $BUTD_DATA/val-img_attr.npy -path_to_valid_img_mask $BUTD_DATA/train-img_mask.npy -num_regions 36 -encoder_type transformer -decoder_type transformer --multimodal_model_type dcap -batch_size 3700 -valid_batch_size 1000 -epochs 2"
+        CMD="python $ONMT/train_mmod.py -data $OUT/data/processed -save_model $OUT/models/$NAME $GPU_OPTS -path_to_train_img_feats $FEATS_DATA/train-resnet50-res4frelu.npy  -path_to_train_attr $BUTD_DATA/train-img_attr.npy -path_to_train_img_mask $BUTD_DATA/train-img_mask.npy -path_to_valid_img_feats $FEATS_DATA/val-resnet50-res4frelu.npy  -path_to_valid_attr $BUTD_DATA/val-img_attr.npy -path_to_valid_img_mask $BUTD_DATA/train-img_mask.npy -num_regions 10 -encoder_type transformer -decoder_type transformer --multimodal_model_type dcap -batch_type sents -batch_size 3700 -valid_batch_size 1000 -epochs 25"
         echo "Training command :: $CMD"
         eval "$CMD"
         

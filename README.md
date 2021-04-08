@@ -54,7 +54,7 @@ Extract global image features.
 ```shell
 cd work/
 for x in train val test_2016_flickr; do
-    python ../MM-DCCN/extract_global_image_feats.py -i ../data/flickr30k-images -f ../multi30k-wmt18/task1-data/image_splits/$x.txt -m ../models_MM-DCCN/resnet50-0676ba61.pth -o ../multi30k-wmt18/task1-data/features_resnet50/$x
+    python ../MM-DCCN/extract_global_image_feats.py -i ../data/flickr30k-images -f ../multi30k-wmt18/task1-data/image_splits/$x.txt -m resnet50-0676ba61.pth -o ../multi30k-wmt18/task1-data/features_resnet50/$x
 done
 ```
 
@@ -75,5 +75,5 @@ done
 
 ```shell
 cd work/
-sh ../MM-DCCN/bpe_pipeline_mmod.sh run1 [preprocess|train|translate|evaluate] ../MM-DCCN ../multi30k-wmt18/task1-data/en-de ../multi30k-wmt18/task1-data/en-de/features_resnet50 ../multi30k-wmt18/task1-data/en-de/features_dccn
+sh ../MM-DCCN/bpe_pipeline_mmod.sh run1 [preprocess|train|translate|evaluate] ../MM-DCCN ../multi30k-wmt18/task1-data/en-de ../multi30k-wmt18/task1-data/features_resnet50 ../multi30k-wmt18/task1-data/features_dccn
 ```
