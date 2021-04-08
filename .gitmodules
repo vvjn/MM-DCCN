@@ -1,0 +1,3 @@
+[submodule "bottom-up-attention.pytorch"]
+	path = bottom-up-attention.pytorch
+	url = https://github.com/vvjn/bottom-up-attention.pytorch
